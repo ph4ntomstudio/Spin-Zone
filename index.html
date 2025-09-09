@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spin Zone</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#93a3b8;
+      --accent:#7c3aed;
+      --glass: rgba(255,255,255,0.04);
+    }
+    body{margin:0;font-family:Inter, ui-sans-serif; background:linear-gradient(180deg,var(--bg), #071028 140%);color:#e6eef8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;min-height:100vh;overflow:hidden}
+    h1{font-size:2rem;margin-bottom:20px;color:#fff;text-align:center}
+    .wrap{max-width:1100px;width:100%;display:grid;grid-template-columns:480px 1fr;gap:22px;align-items:start}
+    .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+    canvas{background:transparent;border-radius:999px;display:block;margin:0 auto}
+    .pointer{width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:24px solid var(--accent);margin:0 auto;position:relative;top:-12px}
+    button{background:var(--accent);border:none;color:white;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;transition:transform 0.2s}
+    button:hover{transform:scale(1.05)}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    textarea{min-height:180px;border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;width:100%}
+    .winner{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.8);background:linear-gradient(135deg,#7c3aed,#3b82f6);padding:40px 60px;border-radius:20px;box-shadow:0 30px 60px rgba(2,6,23,0.8);display:none;text-align:center;color:#fff;animation:popIn 0.5s forwards;max-width:90%;}
+    .winner h2{font-size:2rem;margin-bottom:20px;white-space:nowrap}
+    .winner button{background:#fff;color:#000;font-weight:700;padding:12px 20px;border-radius:12px}
+    .winner.show{display:block;}
+    @keyframes popIn{
+      from{opacity:0;transform:translate(-50%,-50%) scale(0.5);}
+      to{opacity:1;transform:translate(-50%,-50%) scale(1);}
+    }
+    .confetti{position:fixed;width:8px;height:8px;background:#fff;top:0;left:50%;opacity:0.9;pointer-events:none;animation:fall linear forwards}
+    @keyframes fall{
+      to{transform:translateY(100vh) rotate(360deg);opacity:0}
+    }
+  </style>
+</head>
+<body>
+  <h1>Spin Zone</h1>
+  <div class="wrap">
+    <div class="card" style="text-align:center">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="440" height="440"></canvas>
+      <div style="margin-top:10px">
+        <button id="spinBtn">Spin</button>
+        <button id="resetBtn" class="secondary">Reset Position</button>
+      </div>
+    </div>
+    <div class="card">
+      <label for="names">Names Data</label>
+      <textarea id="names" placeholder='Example1\nExample2\nExample3\nExample4'></textarea>
+    </div>
+  </div>
+
+  <div class="winner" id="winnerBox">
+    <h2 id="winnerText">Winner</h2>
+    <button id="closeWinner">Close ❌</button>
+  </div>
+
+  <script>
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const spinBtn = document.getElementById('spinBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const namesTA = document.getElementById('names');
+  const winnerBox = document.getElementById('winnerBox');
+  const winnerText = document.getElementById('winnerText');
+  const closeWinner = document.getElementById('closeWinner');
+
+  let items = [];
+  let rotation = 0;
+  let isSpinning = false;
+
+  function parseItems(){
+    items = namesTA.value.split("\n").map(s => s.trim()).filter(s => s.length > 0);
+    drawWheel();
+  }
+
+  function drawWheel(){
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+    const radius = canvas.width/2 - 6;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(items.length===0){
+      ctx.fillStyle = '#555';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Enter names, one per line',cx,cy);
+      return;
+    }
+    const seg = (Math.PI*2)/items.length;
+    for(let i=0;i<items.length;i++){
+      const start = rotation + i*seg;
+      const end = start + seg;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,radius,start,end);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${i*360/items.length},70%,55%)`;
+      ctx.fill();
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(start+seg/2);
+      ctx.textAlign='right';
+      ctx.fillStyle='#fff';
+      ctx.font='14px sans-serif';
+      ctx.fillText(items[i],radius-10,5);
+      ctx.restore();
+    }
+  }
+
+  function spin(){
+    if(isSpinning||items.length===0)return;
+    isSpinning=true;
+    const chosen = Math.floor(Math.random()*items.length);
+    const seg=(Math.PI*2)/items.length;
+    const finalRotation = (Math.PI*3/2) - chosen*seg - seg/2 + (Math.floor(Math.random()*6)+5)*Math.PI*2;
+    const startRot = rotation;
+    const duration=3000;
+    const start=performance.now();
+    function frame(now){
+      const t=Math.min(1,(now-start)/duration);
+      const eased=1-Math.pow(1-t,3);
+      rotation=startRot+(finalRotation-startRot)*eased;
+      drawWheel();
+      if(t<1){requestAnimationFrame(frame);}else{isSpinning=false;showWinner(chosen);rotation=(rotation%(Math.PI*2));}
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function showWinner(idx){
+    const emojis = ["🎉","🎊"];
+    const emoji = emojis[Math.floor(Math.random()*emojis.length)];
+    winnerText.textContent = `${emoji} Winner: ${items[idx]} ${emoji}`;
+    winnerBox.classList.add('show');
+    launchConfetti();
+  }
+
+  function launchConfetti(){
+    for(let i=0;i<80;i++){
+      const conf=document.createElement('div');
+      conf.className='confetti';
+      conf.style.left=Math.random()*100+'vw';
+      conf.style.background=`hsl(${Math.random()*360},100%,50%)`;
+      conf.style.animationDuration=(2+Math.random()*3)+'s';
+      document.body.appendChild(conf);
+      setTimeout(()=>conf.remove(),5000);
+    }
+  }
+
+  spinBtn.addEventListener('click',spin);
+  resetBtn.addEventListener('click',()=>{rotation=0;drawWheel();});
+  closeWinner.addEventListener('click',()=>{winnerBox.classList.remove('show');});
+  namesTA.addEventListener('input',parseItems);
+
+  namesTA.value='Example1\nExample2\nExample3\nExample4';
+  parseItems();
+  </script>
+</body>
+</html>
