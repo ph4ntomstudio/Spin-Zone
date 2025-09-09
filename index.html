@@ -39,6 +39,13 @@
     @keyframes fall{
       to{transform:translateY(100vh) rotate(360deg);opacity:0}
     }
+
+    /* CMP 2 pilihan */
+    #cmpBanner{
+      position:fixed;bottom:0;left:0;width:100%;background:#111;color:#fff;padding:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;box-shadow:0 -4px 12px rgba(0,0,0,0.5);z-index:9999;
+    }
+    #cmpBanner p{margin:0;flex:1 1 60%;}
+    #cmpBanner button{margin-left:10px;}
   </style>
 </head>
 <body>
@@ -71,12 +78,36 @@
     <button id="closeWinner">Close ❌</button>
   </div>
 
-  <script>
-  const topAd = document.getElementById('topAd');
+  <!-- CMP 2 pilihan -->
+  <div id="cmpBanner">
+    <p>Kami menggunakan cookie untuk menampilkan iklan dan meningkatkan pengalaman Anda. Apakah Anda menyetujui?</p>
+    <div>
+      <button id="cmpAccept">Izinkan</button>
+      <button id="cmpManage">Kelola opsi</button>
+    </div>
+  </div>
 
-  // Fungsi tampilkan iklan
+  <script>
+  const cmpBanner = document.getElementById('cmpBanner');
+  const cmpAccept = document.getElementById('cmpAccept');
+  const cmpManage = document.getElementById('cmpManage');
+  const topAd = document.getElementById('topAd');
+  let adAllowed = false; // track izin iklan
+
+  cmpAccept.addEventListener('click',()=>{
+    cmpBanner.style.display='none';
+    adAllowed = true; // setelah setuju, iklan boleh muncul
+  });
+
+  cmpManage.addEventListener('click',()=>{
+    alert("Anda bisa memilih preferensi iklan di pengaturan.");
+    cmpBanner.style.display='none';
+    adAllowed = false;
+  });
+
+  // Fungsi tampilkan iklan jika diizinkan
   function showAd(){
-    if(topAd.style.display==='none'){
+    if(adAllowed && topAd.style.display==='none'){
       topAd.style.display='inline-block';
       (adsbygoogle = window.adsbygoogle || []).push({});
     }
@@ -139,52 +170,9 @@
     if(isSpinning||items.length===0)return;
     isSpinning=true;
 
-    // Tampilkan iklan saat Spin diklik
+    // Tampilkan iklan jika izin sudah diberikan
     showAd();
 
     const chosen = Math.floor(Math.random()*items.length);
     const seg=(Math.PI*2)/items.length;
-    const finalRotation = (Math.PI*3/2) - chosen*seg - seg/2 + (Math.floor(Math.random()*6)+5)*Math.PI*2;
-    const startRot = rotation;
-    const duration=3000;
-    const start=performance.now();
-    function frame(now){
-      const t=Math.min(1,(now-start)/duration);
-      const eased=1-Math.pow(1-t,3);
-      rotation=startRot+(finalRotation-startRot)*eased;
-      drawWheel();
-      if(t<1){requestAnimationFrame(frame);}else{isSpinning=false;showWinner(chosen);rotation=(rotation%(Math.PI*2));}
-    }
-    requestAnimationFrame(frame);
-  }
-
-  function showWinner(idx){
-    const emojis = ["🎉","🎊"];
-    const emoji = emojis[Math.floor(Math.random()*emojis.length)];
-    winnerText.textContent = `${emoji} Winner: ${items[idx]} ${emoji}`;
-    winnerBox.classList.add('show');
-    launchConfetti();
-  }
-
-  function launchConfetti(){
-    for(let i=0;i<80;i++){
-      const conf=document.createElement('div');
-      conf.className='confetti';
-      conf.style.left=Math.random()*100+'vw';
-      conf.style.background=`hsl(${Math.random()*360},100%,50%)`;
-      conf.style.animationDuration=(2+Math.random()*3)+'s';
-      document.body.appendChild(conf);
-      setTimeout(()=>conf.remove(),5000);
-    }
-  }
-
-  spinBtn.addEventListener('click',spin);
-  resetBtn.addEventListener('click',()=>{rotation=0;drawWheel();});
-  closeWinner.addEventListener('click',()=>{winnerBox.classList.remove('show');});
-  namesTA.addEventListener('input',parseItems);
-
-  namesTA.value='Example1\nExample2\nExample3\nExample4';
-  parseItems();
-  </script>
-</body>
-</html>
+    const finalRotation = (Math.PI*
