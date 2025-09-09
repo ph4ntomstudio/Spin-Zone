@@ -4,11 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Spin Zone</title>
-
-  <!-- GOOGLE ADSENSE -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9891621760540929"
-     crossorigin="anonymous"></script>
-
   <style>
     :root{
       --bg:#0f1724;
@@ -43,14 +38,6 @@
 </head>
 <body>
   <h1>Spin Zone</h1>
-
-  <!-- Iklan 728x90 Spin Zone (disembunyikan awalnya) -->
-  <ins class="adsbygoogle"
-       id="topAd"
-       style="display:none; width:728px; height:90px; margin-bottom:20px;"
-       data-ad-client="ca-pub-9891621760540929"
-       data-ad-slot="8433113381"></ins>
-
   <div class="wrap">
     <div class="card" style="text-align:center">
       <div class="pointer"></div>
@@ -72,17 +59,6 @@
   </div>
 
   <script>
-  const topAd = document.getElementById('topAd');
-
-  // Fungsi tampilkan iklan
-  function showAd(){
-    if(topAd.style.display==='none'){
-      topAd.style.display='inline-block';
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    }
-  }
-
-  // Spin Wheel Script
   const canvas = document.getElementById('wheel');
   const ctx = canvas.getContext('2d');
   const spinBtn = document.getElementById('spinBtn');
@@ -138,10 +114,6 @@
   function spin(){
     if(isSpinning||items.length===0)return;
     isSpinning=true;
-
-    // Tampilkan iklan saat Spin diklik
-    showAd();
-
     const chosen = Math.floor(Math.random()*items.length);
     const seg=(Math.PI*2)/items.length;
     const finalRotation = (Math.PI*3/2) - chosen*seg - seg/2 + (Math.floor(Math.random()*6)+5)*Math.PI*2;
