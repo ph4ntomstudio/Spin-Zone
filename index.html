@@ -39,22 +39,15 @@
     @keyframes fall{
       to{transform:translateY(100vh) rotate(360deg);opacity:0}
     }
-
-    /* CMP 2 pilihan */
-    #cmpBanner{
-      position:fixed;bottom:0;left:0;width:100%;background:#111;color:#fff;padding:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;box-shadow:0 -4px 12px rgba(0,0,0,0.5);z-index:9999;
-    }
-    #cmpBanner p{margin:0;flex:1 1 60%;}
-    #cmpBanner button{margin-left:10px;}
   </style>
 </head>
 <body>
   <h1>Spin Zone</h1>
 
-  <!-- Iklan 728x90 Spin Zone -->
+  <!-- Iklan 728x90 Spin Zone (disembunyikan awalnya) -->
   <ins class="adsbygoogle"
        id="topAd"
-       style="display:inline-block;width:728px;height:90px"
+       style="display:none; width:728px; height:90px; margin-bottom:20px;"
        data-ad-client="ca-pub-9891621760540929"
        data-ad-slot="8433113381"></ins>
 
@@ -78,35 +71,16 @@
     <button id="closeWinner">Close ❌</button>
   </div>
 
-  <!-- CMP 2 pilihan -->
-  <div id="cmpBanner">
-    <p>Kami menggunakan cookie untuk menampilkan iklan dan meningkatkan pengalaman Anda. Apakah Anda menyetujui?</p>
-    <div>
-      <button id="cmpAccept">Izinkan</button>
-      <button id="cmpManage">Kelola opsi</button>
-    </div>
-  </div>
-
   <script>
-  // CMP Logic
-  const cmpBanner = document.getElementById('cmpBanner');
-  const cmpAccept = document.getElementById('cmpAccept');
-  const cmpManage = document.getElementById('cmpManage');
   const topAd = document.getElementById('topAd');
 
+  // Fungsi tampilkan iklan
   function showAd(){
-    (adsbygoogle = window.adsbygoogle || []).push({});
+    if(topAd.style.display==='none'){
+      topAd.style.display='inline-block';
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    }
   }
-
-  cmpAccept.addEventListener('click',()=>{
-    cmpBanner.style.display='none';
-    showAd(); // tampilkan iklan setelah user setuju
-  });
-
-  cmpManage.addEventListener('click',()=>{
-    alert("Anda bisa memilih preferensi iklan di pengaturan."); // bisa diganti dengan menu pengaturan
-    cmpBanner.style.display='none';
-  });
 
   // Spin Wheel Script
   const canvas = document.getElementById('wheel');
@@ -164,6 +138,10 @@
   function spin(){
     if(isSpinning||items.length===0)return;
     isSpinning=true;
+
+    // Tampilkan iklan saat Spin diklik
+    showAd();
+
     const chosen = Math.floor(Math.random()*items.length);
     const seg=(Math.PI*2)/items.length;
     const finalRotation = (Math.PI*3/2) - chosen*seg - seg/2 + (Math.floor(Math.random()*6)+5)*Math.PI*2;
